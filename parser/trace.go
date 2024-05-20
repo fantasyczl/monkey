@@ -24,7 +24,7 @@ func trace(name string) string {
 	}
 	depth.Add(1)
 
-	printLog("BEGIN %s", name)
+	printLog("BEGIN", " %s", name)
 
 	return name
 }
@@ -42,13 +42,17 @@ func untrace(name string) {
 		return
 	}
 
-	printLog("END   %s", name)
+	printLog("END", "   %s", name)
 
 	depth.Add(-1)
 
 	return
 }
 
-func printLog(msg string, args ...interface{}) {
-	fmt.Printf(getIdent()+msg+"\n", args...)
+func printLog(sign, msg string, args ...interface{}) {
+	fmt.Printf(getIdent()+signColor(sign)+msg+"\n", args...)
+}
+
+func signColor(s string) string {
+	return fmt.Sprintf("\033[1;32m%s\033[0m", s)
 }
