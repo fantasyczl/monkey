@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/fantasyczl/monkey/lexer"
-	"github.com/fantasyczl/monkey/token"
+	"github.com/fantasyczl/monkey/parser"
 )
 
 const PROMPT = ">> "
@@ -27,12 +27,43 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
-
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			if _, err := fmt.Fprintf(out, "%+v\n", tok); err != nil {
-				_, _ = out.Write([]byte(err.Error()))
-				break
-			}
+		p := parser.New(l)
+		program := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
 		}
+
+		writeString(out, program.String())
+		writeString(out, "\n")
+	}
+}
+
+const MONKEY_FACE = `
+            __,__
+   .--.  .-"     "-.  .--.
+  / .. \/  .-. .-.  \/ ..  \
+ | |  '|  /   Y   \  |'  |  |
+ | \   \  \ 0 | 0 /  /   /  |
+  \ '- ,\.-"""""""-./, -'  /
+   ''-' /_   ^ ^   _\ '-''
+       |  \._   _./  |
+       \   \ '~' /   /
+        '._ '-=-' _.'
+           '-----'
+`
+
+func printParserErrors(out io.Writer, errors []string) {
+	writeString(out, MONKEY_FACE)
+	writeString(out, "Woops! We ran into some monkey business here!\n")
+	writeString(out, " parser errors:\n")
+	for _, msg := range errors {
+		_, _ = out.Write([]byte("\t" + msg + "\n"))
+	}
+}
+
+func writeString(out io.Writer, s string) {
+	if _, err := io.WriteString(out, s); err != nil {
+		panic(err)
 	}
 }
