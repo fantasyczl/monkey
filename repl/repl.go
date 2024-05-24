@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/fantasyczl/monkey/evaluator"
 	"github.com/fantasyczl/monkey/lexer"
 	"github.com/fantasyczl/monkey/parser"
 )
@@ -34,8 +35,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		writeString(out, program.String())
-		writeString(out, "\n")
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			writeString(out, evaluated.Inspect())
+			writeString(out, "\n")
+		}
 	}
 }
 
