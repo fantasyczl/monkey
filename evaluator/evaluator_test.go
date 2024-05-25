@@ -36,6 +36,24 @@ func TestEvalIntegerExpression(t *testing.T) {
 	}
 }
 
+func testArrayObject(t *testing.T, obj object.Object, expected []int64) bool {
+	arr, ok := obj.(*object.Array)
+	if !ok {
+		t.Errorf("object is not Array. got=%T (%+v)", obj, obj)
+		return false
+	}
+	if len(arr.Elements) != len(expected) {
+		t.Errorf("array has wrong num of elements. got=%d", len(arr.Elements))
+		return false
+	}
+	for i, el := range expected {
+		if !testIntegerObject(t, arr.Elements[i], el) {
+			return false
+		}
+	}
+	return true
+}
+
 func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
@@ -368,6 +386,18 @@ func TestBuiltinFunctions(t *testing.T) {
 		{`len(" ")`, 1},
 		{`len("one \n two")`, 9},
 		{`len("one \t\" two")`, 10},
+		{`first([1,2,3])`, 1},
+		{`first([])`, nil},
+		{`first("hello")`, "argument to `first` must be ARRAY, got STRING"},
+		{`last([])`, nil},
+		{`last([1,2,3])`, 3},
+		{`last(1)`, "argument to `last` must be ARRAY, got INTEGER"},
+		{`rest([1,2,3])`, []int64{2, 3}},
+		{`rest([])`, nil},
+		{`rest("hello")`, "argument to `rest` must be ARRAY, got STRING"},
+		{`push([1,2,3], 4)`, []int64{1, 2, 3, 4}},
+		{`push([], 1)`, []int64{1}},
+		{`push(1, 1)`, "argument to `push` must be ARRAY, got INTEGER"},
 	}
 
 	for _, tt := range tests {
@@ -384,6 +414,12 @@ func TestBuiltinFunctions(t *testing.T) {
 			if errOjb.Message != expected {
 				t.Errorf("wrong error message. expected=%q, got=%q", expected, errOjb.Message)
 			}
+		case nil:
+			testNullObject(t, evaluated)
+		case []int64:
+			testArrayObject(t, evaluated, expected)
+		default:
+			t.Fatalf("unexpected type: %T", expected)
 		}
 	}
 }
