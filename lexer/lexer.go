@@ -1,6 +1,8 @@
 package lexer
 
 import (
+	"bytes"
+
 	"github.com/fantasyczl/monkey/token"
 )
 
@@ -25,6 +27,41 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition++
+}
+
+func (l *Lexer) readString() string {
+	buf := bytes.NewBuffer(nil)
+	for {
+		l.readChar()
+
+		if l.ch == '\\' {
+			// 再读一个字节
+			l.readChar()
+			buf.WriteByte(parseEscapeChar(l.ch))
+			continue
+		}
+
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+
+		buf.WriteByte(l.ch)
+	}
+
+	return buf.String()
+}
+
+func parseEscapeChar(ch byte) byte {
+	switch ch {
+	case 'n':
+		return '\n'
+	case 't':
+		return '\t'
+	case 'r':
+		return '\r'
+	default:
+		return ch
+	}
 }
 
 func (l *Lexer) NextToken() token.Token {
@@ -73,6 +110,9 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.readString()
 	case 0:
 		tok = token.Token{Type: token.EOF, Literal: ""}
 	default:
