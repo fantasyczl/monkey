@@ -7,6 +7,7 @@ import (
 
 	"github.com/fantasyczl/monkey/evaluator"
 	"github.com/fantasyczl/monkey/lexer"
+	"github.com/fantasyczl/monkey/object"
 	"github.com/fantasyczl/monkey/parser"
 )
 
@@ -14,6 +15,7 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		if _, err := fmt.Fprint(out, PROMPT); err != nil {
@@ -35,7 +37,7 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		evaluated := evaluator.Eval(program)
+		evaluated := evaluator.Eval(program, env)
 		if evaluated != nil {
 			writeString(out, evaluated.Inspect())
 			writeString(out, "\n")
