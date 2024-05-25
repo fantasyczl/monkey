@@ -54,6 +54,7 @@ if (5 < 10) {
 "hello\n world"
 "hello\n\t\t world"
 "hello\n\t\t \"world"
+[1, 2];
 `,
 			expected: tokenList{
 				{token.LET, "let"},
@@ -135,6 +136,12 @@ if (5 < 10) {
 				{token.STRING, "hello\n world"},
 				{token.STRING, "hello\n\t\t world"},
 				{token.STRING, "hello\n\t\t \"world"},
+				{token.LBRACKET, "["},
+				{token.INT, "1"},
+				{token.COMMA, ","},
+				{token.INT, "2"},
+				{token.RBRACKET, "]"},
+				{token.SEMICOLON, ";"},
 				{token.EOF, ""},
 			},
 		},
