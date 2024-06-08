@@ -246,7 +246,7 @@ func (i *Integer) HashKey() HashKey {
 
 func (s *String) HashKey() HashKey {
 	h := fnv.New64a()
-	h.Write([]byte(s.Value))
+	_, _ = h.Write([]byte(s.Value))
 	return HashKey{Type: s.Type(), Value: h.Sum64()}
 }
 
